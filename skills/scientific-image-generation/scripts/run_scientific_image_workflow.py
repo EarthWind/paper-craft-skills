@@ -226,6 +226,9 @@ def next_step(run_dir):
     if (run_dir / "blocker.json").exists():
         return "blocked", "查看 blocker.json；不要伪造图片"
     if not find_image(run_dir):
+        run_input = read_json(run_dir / "run_input.json") or {}
+        if run_input.get("backend") == "api-image":
+            return "awaiting_image", "运行 generate_image_gemini.py --run-dir（需要 GEMINI_API_KEY）"
         return "awaiting_image", "按 image_prompt.txt 出图，然后运行 register_generated_image.py"
     review = read_json(run_dir / "semantic_review.json")
     if semantic_status(review) != "completed":
@@ -279,13 +282,21 @@ def cmd_repair(args):
         },
     )
     spec = run_input.get("figure_spec") or {}
+    metadata = read_json(run_dir / "metadata.json") or {}
+    backend = args.backend or metadata.get("backend") or run_input.get("backend") or "auto"
+    # Nano Banana edits images well: for a local fix, send the previous image as the reference
+    reference_image, reference_role = None, ""
+    parent_image = find_image(run_dir)
+    if backend == "api-image" and str(review.get("recommended_next_action")).lower() == "edit" and parent_image:
+        reference_image, reference_role = str(parent_image), "edit_image"
     edit_args = Namespace(
         prompt=repair_prompt,
         negative_prompt=run_input.get("negative_prompt") or DEFAULT_NEGATIVE_PROMPT,
         aspect_ratio=run_input.get("aspect_ratio") or "1:1",
         image_size=run_input.get("image_size") or "1K",
-        backend=args.backend or run_input.get("backend") or "auto",
-        reference_image=None,
+        backend=backend,
+        image_provider=run_input.get("image_provider") or "gemini",
+        reference_image=reference_image,
         source_run=str(run_dir),
         source_context=run_input.get("source_context"),
         caption=run_input.get("caption"),
@@ -295,7 +306,7 @@ def cmd_repair(args):
         forbidden_labels=run_input.get("forbidden_labels") or [],
         style_brief=run_input.get("style_brief"),
         feedback="宿主模型看图审查发现基础问题，自动生成一版修订图。",
-        reference_role="",
+        reference_role=reference_role,
         preserve_constraints=spec.get("preserve_constraints") or [],
         allowed_changes=spec.get("allowed_changes") or [],
         disallowed_changes=spec.get("disallowed_changes") or [],
@@ -308,7 +319,12 @@ def cmd_repair(args):
     write_json(new_dir / "run_input.json", new_input)
     print("REPAIR_PREPARED: " + reason)
     print("Image prompt: " + str(new_dir / "image_prompt.txt"))
+    if reference_image:
+        print("Reference image (edit_image): " + reference_image)
     print("Run directory: " + str(new_dir))
+    if backend == "api-image":
+        print("Next: generate_image_gemini.py --run-dir <new run>, review it, then finalize with --initial-run-dir " + str(run_dir))
+        return 0
     print("Next: produce the revised image, register it, review it, then finalize with --initial-run-dir " + str(run_dir))
     return 0
 
@@ -374,7 +390,7 @@ def main():
     p_status.add_argument("--run-dir", required=True)
     p_repair = sub.add_parser("repair", help="Prepare at most one auto-repair edit run from the semantic review.")
     p_repair.add_argument("--run-dir", required=True)
-    p_repair.add_argument("--backend", choices=["auto", "host-image-tool", "code-render"])
+    p_repair.add_argument("--backend", choices=["auto", "host-image-tool", "code-render", "api-image"])
     p_repair.add_argument("--output-dir")
     p_final = sub.add_parser("finalize", help="Write manual_review.md, rebuild manifest, write workflow_status.json.")
     p_final.add_argument("--run-dir", required=True, help="Final run (the repair run if one was made).")

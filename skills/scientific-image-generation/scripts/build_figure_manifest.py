@@ -102,9 +102,14 @@ def build_manifest(run_dir, source_run=None, feedback=None):
             "target_height": run_input_dict.get("target_height"),
             "backend": metadata_dict.get("backend") or run_input_dict.get("backend"),
             "generation_tool": metadata_dict.get("generation_tool"),
+            "image_provider": metadata_dict.get("image_provider") or run_input_dict.get("image_provider"),
+            "model": metadata_dict.get("model"),
+            "model_version": metadata_dict.get("model_version"),
         },
         "artifacts": {
             "image_prompt": str(run_dir / "image_prompt.txt") if (run_dir / "image_prompt.txt").exists() else None,
+            "request": str(run_dir / "request.json") if (run_dir / "request.json").exists() else None,
+            "response_summary": str(run_dir / "response_summary.json") if (run_dir / "response_summary.json").exists() else None,
             "render_source": str(render_source) if render_source else None,
             "reference_image": str(reference_copy) if reference_copy else None,
             "auto_repair_prompt": str(run_dir / "auto_repair_prompt.json") if (run_dir / "auto_repair_prompt.json").exists() else None,
@@ -128,6 +133,7 @@ def build_manifest(run_dir, source_run=None, feedback=None):
         "attempts": {
             "iterations_completed": metadata_dict.get("iterations_completed"),
             "auto_repair_round": run_input_dict.get("auto_repair_round") or 0,
+            "usage": metadata_dict.get("usage"),
         },
         "lineage": {
             "source_run": str(source_run_path).strip() if source_run_path else run_input_dict.get("source_run"),
@@ -166,7 +172,7 @@ def build_manifest(run_dir, source_run=None, feedback=None):
             "review_report": str(run_dir / "manual_review.md") if (run_dir / "manual_review.md").exists() else None,
             "generation_evidence": [
                 str(path)
-                for path in [run_dir / "image_prompt.txt", render_source]
+                for path in [run_dir / "image_prompt.txt", render_source, run_dir / "request.json", run_dir / "response_summary.json"]
                 if path and Path(path).exists()
             ],
         },

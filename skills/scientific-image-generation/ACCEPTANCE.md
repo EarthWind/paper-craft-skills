@@ -2,7 +2,7 @@
 
 ## 当前定位
 
-这个 skill 面向由宿主 agent 自己出图的科研配图流程：Codex 使用内置图像生成，Claude Code 写 SVG/HTML/Python 绘图源码后渲染成 PNG。它参考 PaperBanana 的 run、continue、manifest、package 思路，不调用任何外部生图接口，也不需要 token。
+这个 skill 面向由宿主 agent 自己出图的科研配图流程：Codex 使用内置图像生成，Claude Code 写 SVG/HTML/Python 绘图源码后渲染成 PNG。它参考 PaperBanana 的 run、continue、manifest、package 思路，默认不调用任何外部生图接口，也不需要 token；可选的 `api-image` 后端调用 Gemini Nano Banana，需要 `GEMINI_API_KEY`。
 
 它负责：
 
@@ -27,7 +27,9 @@ python scripts/run_scientific_image_workflow.py finalize --run-dir <run>
 
 预期：
 
-- 任何步骤都不读取生图 token，不发网络请求。
+- 除 `generate_image_gemini.py` 外，任何步骤都不读取 API key，不发网络请求。
+- `generate_image_gemini.py` 的 key 只从环境变量读取；`request.json`、`response_summary.json` 和其他文件里都没有 key 和图片 base64（测试用本地假服务器验证）。
+- Gemini 缺 key、HTTP 报错、安全拦截、无图片时都写 `blocker.json`，不出现伪造图片。
 - `prepare_image_run.py` 写 `figure_spec.json`、`run_input.json`、`image_prompt.txt`、`metadata.json`（`awaiting_image`）、`figure_manifest.json`。
 - 宿主无法出图时用 `--blocked-reason` 写 `blocker.json`，不会出现伪造图片。
 - `check.json` 只由 `register_generated_image.py` 生成，包含 `machine_check` 和 `quality_review_axes`。
@@ -45,6 +47,7 @@ python scripts/run_scientific_image_workflow.py finalize --run-dir <run>
 - `scripts/dry_run_scientific_image.py`
 - `scripts/prepare_image_run.py`
 - `scripts/render_figure_source.py`
+- `scripts/generate_image_gemini.py`（可选 Nano Banana 后端）
 - `scripts/register_generated_image.py`
 - `scripts/host_semantic_review.py`
 - `scripts/run_scientific_image_workflow.py`

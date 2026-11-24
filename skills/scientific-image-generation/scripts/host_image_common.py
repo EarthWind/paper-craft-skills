@@ -1,8 +1,10 @@
 """Shared helpers for host-model image generation (Claude Code / Codex).
 
-No network access, no API tokens: the image itself is produced by the host
-agent (Codex built-in image generation, or Claude rendering SVG/HTML/Python
-figure code), and these helpers only build the run contract around it.
+By default no network access and no API tokens: the image is produced by the
+host agent (Codex built-in image generation, or Claude rendering SVG/HTML/Python
+figure code). The optional api-image backend calls an image model API
+(Gemini "Nano Banana") through generate_image_gemini.py; only that script
+reads an API key, from the environment.
 """
 
 import hashlib
@@ -11,10 +13,13 @@ from datetime import datetime
 from pathlib import Path
 
 DEFAULT_NEGATIVE_PROMPT = "水印，模糊文字，错乱标签，低清晰度，广告风格"
-BACKENDS = ["auto", "host-image-tool", "code-render"]
+BACKENDS = ["auto", "host-image-tool", "code-render", "api-image"]
+IMAGE_PROVIDERS = ["gemini"]
+DEFAULT_GEMINI_IMAGE_MODEL = "gemini-nano-banana-2.1"
 BACKEND_NOTES = {
     "host-image-tool": "宿主自带的生图工具（Codex 内置图像生成，或宿主暴露的其他生图工具）直接出位图",
     "code-render": "宿主模型写 SVG/HTML/Python/Graphviz/Mermaid 绘图源码，再用 render_figure_source.py 渲染成 PNG（Claude Code 默认）",
+    "api-image": "脚本直接调用生图模型 API（Gemini Nano Banana，需要 GEMINI_API_KEY），用 generate_image_gemini.py 出图",
     "auto": "有生图工具就用 host-image-tool，否则用 code-render",
 }
 IMAGE_NAMES = ["generated_image.png", "generated_image.jpg", "generated_image.jpeg", "generated_image.webp"]
@@ -95,7 +100,8 @@ def add_figure_arguments(parser):
     parser.add_argument("--negative-prompt", default=DEFAULT_NEGATIVE_PROMPT)
     parser.add_argument("--aspect-ratio", default="1:1")
     parser.add_argument("--image-size", default="1K", help="1K / 2K / 4K, long side of the target image.")
-    parser.add_argument("--backend", default="auto", choices=BACKENDS, help="How the host agent will produce the image.")
+    parser.add_argument("--backend", default="auto", choices=BACKENDS, help="How the image will be produced.")
+    parser.add_argument("--image-provider", default="gemini", choices=IMAGE_PROVIDERS, help="Image API provider for the api-image backend.")
     parser.add_argument("--reference-image", help="Local image for an edit/reference run.")
     parser.add_argument("--source-run", help="Prior run directory for edit/reference runs.")
     parser.add_argument("--source-context", help="Original paper paragraph, method description, or user material behind the figure.")
@@ -123,6 +129,7 @@ def load_input_json(path):
         "aspect_ratio": data.get("aspect_ratio", data.get("aspectRatio", "1:1")),
         "image_size": data.get("image_size", data.get("imageSize", "1K")),
         "backend": data.get("backend", "auto"),
+        "image_provider": data.get("image_provider", "gemini"),
         "reference_image": data.get("reference_image"),
         "source_run": data.get("source_run"),
         "source_context": data.get("source_context"),
@@ -205,7 +212,11 @@ def build_host_prompt(args):
     if args.disallowed_changes:
         lines.append("禁止修改：" + "、".join(args.disallowed_changes))
     if args.reference_image:
-        lines.append(f"参考图：{args.reference_image}（角色：{args.reference_role or '未声明'}）")
+        if getattr(args, "backend", None) == "api-image":
+            # the image itself travels with the API request; do not leak local paths
+            lines.append(f"参考图：见随附图片（角色：{args.reference_role or '未声明'}）")
+        else:
+            lines.append(f"参考图：{args.reference_image}（角色：{args.reference_role or '未声明'}）")
     if args.negative_prompt:
         lines.append("避免：" + args.negative_prompt.strip())
     lines.append(f"画幅：{args.aspect_ratio}，目标尺寸约 {width} x {height} 像素。")
