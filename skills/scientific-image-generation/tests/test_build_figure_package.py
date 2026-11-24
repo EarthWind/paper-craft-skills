@@ -12,7 +12,7 @@ def test_package_carries_figure_spec_fields(tmp_path):
     run_dir = tmp_path / "smoke_001"
     run_dir.mkdir()
     figure_spec = {
-        "schema": "giiisp_figure_spec_v1",
+        "schema": "sci_figure_spec_v1",
         "figure_kind": "workflow",
         "caption": "方法流程",
         "communicative_intent": "展示模型从输入到验证的关键步骤",
@@ -23,7 +23,7 @@ def test_package_carries_figure_spec_fields(tmp_path):
     }
     (run_dir / "figure_spec.json").write_text(json.dumps(figure_spec, ensure_ascii=False), encoding="utf-8")
     manifest = {
-        "schema": "giiisp_figure_manifest_v1",
+        "schema": "sci_figure_manifest_v1",
         "run_id": "smoke_001",
         "figure_id": "smoke_001",
         "run_dir": str(run_dir),

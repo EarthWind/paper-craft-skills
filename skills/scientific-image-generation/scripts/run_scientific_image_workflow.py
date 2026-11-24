@@ -266,7 +266,7 @@ def cmd_repair(args):
     write_json(
         run_dir / "auto_repair_prompt.json",
         {
-            "schema": "giiisp_auto_repair_prompt_v1",
+            "schema": "sci_auto_repair_prompt_v1",
             "created_at": now_iso(),
             "source_run_dir": str(run_dir),
             "reason": reason,
@@ -324,7 +324,7 @@ def build_status(run_dir, initial_run_dir, auto_repair):
     else:
         status = "completed"
     return {
-        "schema": "giiisp_scientific_image_workflow_v3",
+        "schema": "sci_image_workflow_v3",
         "created_at": now_iso(),
         "provider": "host-agent",
         "run_dir": str(run_dir),

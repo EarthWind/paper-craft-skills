@@ -85,14 +85,14 @@ def build_package(manifest_paths, package_dir, title):
         )
 
     plan = {
-        "schema": "giiisp_figure_package_plan_v1",
+        "schema": "sci_figure_package_plan_v1",
         "created_at": now,
         "package_id": package_id,
         "title": title,
         "items": plan_items,
     }
     checkpoint = {
-        "schema": "giiisp_figure_package_checkpoint_v1",
+        "schema": "sci_figure_package_checkpoint_v1",
         "created_at": now,
         "updated_at": now,
         "package_id": package_id,
@@ -109,7 +109,7 @@ def build_package(manifest_paths, package_dir, title):
         ],
     }
     report = {
-        "schema": "giiisp_figure_package_report_v1",
+        "schema": "sci_figure_package_report_v1",
         "created_at": now,
         "package_id": package_id,
         "title": title,

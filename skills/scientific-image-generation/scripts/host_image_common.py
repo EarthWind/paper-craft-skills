@@ -165,7 +165,7 @@ def merge_input_json(args):
 
 def build_figure_spec(args):
     return {
-        "schema": "giiisp_figure_spec_v1",
+        "schema": "sci_figure_spec_v1",
         "figure_kind": args.figure_kind,
         "caption": args.caption,
         "communicative_intent": args.intent or args.caption,

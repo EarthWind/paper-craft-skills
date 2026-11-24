@@ -34,7 +34,6 @@ def first_existing(run_dir, names):
 
 def build_manifest(run_dir, source_run=None, feedback=None):
     run_dir = Path(run_dir).resolve()
-    request = read_json(run_dir / "request.json")
     run_input = read_json(run_dir / "run_input.json")
     metadata = read_json(run_dir / "metadata.json")
     check = read_json(run_dir / "check.json")
@@ -52,9 +51,6 @@ def build_manifest(run_dir, source_run=None, feedback=None):
     semantic_review_dict = semantic_review if isinstance(semantic_review, dict) else {}
     figure_spec_dict = figure_spec if isinstance(figure_spec, dict) else run_input_dict.get("figure_spec") or {}
 
-    body = (request or {}).get("body", {}) if isinstance(request, dict) else {}
-    if not body and isinstance(run_input, dict):
-        body = run_input.get("request_body_summary") or {}
     image_sha256 = None
     if image:
         try:
@@ -74,7 +70,7 @@ def build_manifest(run_dir, source_run=None, feedback=None):
         elif image:
             inferred_status = "completed"
     manifest = {
-        "schema": "giiisp_figure_manifest_v1",
+        "schema": "sci_figure_manifest_v1",
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "run_id": run_dir.name,
         "figure_id": run_dir.name,
@@ -97,11 +93,11 @@ def build_manifest(run_dir, source_run=None, feedback=None):
             "style_brief": run_input_dict.get("style_brief"),
             "reference_role": run_input_dict.get("reference_role") or figure_spec_dict.get("reference_role"),
             "figure_spec": figure_spec_dict,
-            "prompt": run_input_dict.get("prompt") or body.get("prompt"),
+            "prompt": run_input_dict.get("prompt"),
             "host_prompt": run_input_dict.get("host_prompt"),
-            "negative_prompt": run_input_dict.get("negative_prompt") or body.get("negativePrompt"),
-            "aspect_ratio": run_input_dict.get("aspect_ratio") or body.get("aspectRatio"),
-            "image_size": run_input_dict.get("image_size") or body.get("imageSize"),
+            "negative_prompt": run_input_dict.get("negative_prompt"),
+            "aspect_ratio": run_input_dict.get("aspect_ratio"),
+            "image_size": run_input_dict.get("image_size"),
             "target_width": run_input_dict.get("target_width"),
             "target_height": run_input_dict.get("target_height"),
             "backend": metadata_dict.get("backend") or run_input_dict.get("backend"),
