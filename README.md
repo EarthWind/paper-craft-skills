@@ -210,4 +210,6 @@ npx skills add EarthWind/paper-craft-skills
 
 ---
 
-MIT
+## 许可证
+
+[MIT](./LICENSE)

@@ -213,7 +213,7 @@ Aligns paper concepts with the GitHub source code
 
 ## License
 
-MIT
+[MIT](./LICENSE)
 
 ---
 
