@@ -1,18 +1,32 @@
+<div align="center">
+
 # paper-craft-skills
-
-[中文](./README.md) | English
-
-> This repository is a fork of [zsyggg/paper-craft-skills](https://github.com/zsyggg/paper-craft-skills), with security hardening and other changes. All credit for the original project goes to its author.
 
 **Turn academic papers into polished method figures, visual slide decks, and in-depth articles — zero config, one command.**
 
-<p align="center">
-  <img src="examples/paper-illustrated/attention-is-all-you-need/transformer-overview-paper-figure.png" width="700" alt="Transformer architecture — generated from Attention Is All You Need"/>
-</p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-<p align="center">
+[中文](./README.md) | English
+
+<img src="examples/paper-illustrated/attention-is-all-you-need/transformer-overview-paper-figure.png" width="700" alt="Transformer architecture — generated from Attention Is All You Need"/>
+
+<p>
   From arxiv link to publication-ready visuals, AIGC slide decks, and deep-dive articles.<br/>
   Drop a paper, pick a style, get output that looks like a human expert made it.
+</p>
+
+</div>
+
+> [!NOTE]
+> This repository is a fork of [zsyggg/paper-craft-skills](https://github.com/zsyggg/paper-craft-skills), with security hardening and other changes. All credit for the original project goes to its author.
+
+<p align="center">
+  <a href="#how-to-install">Install</a> ·
+  <a href="#whats-inside">What's inside</a> ·
+  <a href="#paper-deck--visual-slide-decks-that-dont-look-like-templates">paper-deck</a> ·
+  <a href="#paper-comic--how-it-works">paper-comic</a> ·
+  <a href="#paper-analyzer--deep-articles-that-read-like-a-human-expert-wrote-them">paper-analyzer</a> ·
+  <a href="#license">License</a>
 </p>
 
 ---
@@ -21,7 +35,7 @@
 
 **Copy this into Codex or Claude Code:**
 
-```
+```text
 Please install EarthWind/paper-craft-skills for me.
 GitHub: https://github.com/EarthWind/paper-craft-skills
 ```
@@ -80,7 +94,7 @@ Reads the full paper → searches GitHub for code → writes in your chosen styl
 </td>
 </tr>
 <tr>
-<td width="50%" align="center" valign="top">
+<td colspan="2" align="center" valign="top">
 
 ### 🖼️ paper-deck
 **Paper → Visual Slide Deck**
@@ -97,9 +111,6 @@ Reads your paper → plans the deck → generates slide images → exports PPTX/
 | 🎞️ Slides | 16:9 visual pages |
 | 📦 Export | `.pptx` + `.pdf` |
 | 🛠️ Edits | Regenerate any page |
-
-</td>
-<td width="50%" align="center" valign="top">
 
 </td>
 </tr>
@@ -204,9 +215,9 @@ Aligns paper concepts with the GitHub source code
 </table>
 
 ```bash
-/paper-analyzer https://arxiv.org/abs/1706.03762     # arxiv link
-/paper-analyzer /path/to/paper.pdf                     # local PDF
-/paper-analyzer                                         # then paste text
+/paper-analyzer https://arxiv.org/abs/1706.03762   # arxiv link
+/paper-analyzer /path/to/paper.pdf                  # local PDF
+/paper-analyzer                                     # then paste text
 ```
 
 ---

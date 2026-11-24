@@ -1,17 +1,31 @@
+<div align="center">
+
 # paper-craft-skills
-
-中文 | [English](./README.en.md)
-
-> 本仓库 fork 自 [zsyggg/paper-craft-skills](https://github.com/zsyggg/paper-craft-skills)，在原项目基础上做了安全加固等修改。原项目版权归原作者所有。
 
 **把学术论文变成精美的方法图解、高质感 AIGC 幻灯片和深度长文。零配置，一行命令。**
 
-<p align="center">
-  <img src="examples/paper-illustrated/attention-is-all-you-need/transformer-overview-paper-figure.png" width="700" alt="基于 Attention Is All You Need 生成的 Transformer 架构图"/>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
+中文 | [English](./README.en.md)
+
+<img src="examples/paper-illustrated/attention-is-all-you-need/transformer-overview-paper-figure.png" width="700" alt="基于 Attention Is All You Need 生成的 Transformer 架构图"/>
+
+<p>
+  输入 arxiv 链接，选择风格，输出像人类专家手笔的图解、PPT 和文章。
 </p>
 
+</div>
+
+> [!NOTE]
+> 本仓库 fork 自 [zsyggg/paper-craft-skills](https://github.com/zsyggg/paper-craft-skills)，在原项目基础上做了安全加固等修改。原项目版权归原作者所有。
+
 <p align="center">
-  输入 arxiv 链接，选择风格，输出像人类专家手笔的图解、PPT 和文章。
+  <a href="#怎么安装">怎么安装</a> ·
+  <a href="#三个技能">三个技能</a> ·
+  <a href="#paper-deck--不像模板的视觉幻灯片">paper-deck</a> ·
+  <a href="#paper-comic--怎么用的">paper-comic</a> ·
+  <a href="#paper-analyzer--一篇论文三种写法">paper-analyzer</a> ·
+  <a href="#许可证">许可证</a>
 </p>
 
 ---
@@ -20,7 +34,7 @@
 
 **把这段话复制到 Codex 或 Claude Code 里：**
 
-```
+```text
 请帮我安装 EarthWind/paper-craft-skills
 GitHub：https://github.com/EarthWind/paper-craft-skills
 ```
@@ -79,7 +93,7 @@ npx skills add EarthWind/paper-craft-skills
 </td>
 </tr>
 <tr>
-<td width="50%" align="center" valign="top">
+<td colspan="2" align="center" valign="top">
 
 ### 🖼️ paper-deck
 **论文 → 视觉幻灯片**
@@ -96,9 +110,6 @@ npx skills add EarthWind/paper-craft-skills
 | 🎞️ 幻灯片 | 16:9 视觉页面 |
 | 📦 导出 | `.pptx` + `.pdf` |
 | 🛠️ 返修 | 任意页可重生成 |
-
-</td>
-<td width="50%" align="center" valign="top">
 
 </td>
 </tr>
@@ -203,9 +214,9 @@ npx skills add EarthWind/paper-craft-skills
 </table>
 
 ```bash
-/paper-analyzer https://arxiv.org/abs/1706.03762     # arxiv 链接
-/paper-analyzer /path/to/paper.pdf                     # 本地 PDF
-/paper-analyzer                                         # 然后粘贴文本
+/paper-analyzer https://arxiv.org/abs/1706.03762   # arxiv 链接
+/paper-analyzer /path/to/paper.pdf                  # 本地 PDF
+/paper-analyzer                                     # 然后粘贴文本
 ```
 
 ---
