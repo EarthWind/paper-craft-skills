@@ -27,7 +27,7 @@ def test_basic_dry_run_contract():
     assert "问题定义" in payload["host_prompt"]
     assert "no image was produced" in payload["safety"]
     assert payload["run_input_preview"]["caption"] == "科研流程图"
-    assert payload["figure_spec_preview"]["schema"] == "giiisp_figure_spec_v1"
+    assert payload["figure_spec_preview"]["schema"] == "sci_figure_spec_v1"
 
 
 def test_reference_image_dry_run_records_hash_not_bytes(tmp_path):

@@ -8,11 +8,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "build_figure_manifest.py"
 
 
-def test_manifest_recovers_figure_spec_without_request_file(tmp_path):
+def test_manifest_reads_task_from_run_input(tmp_path):
     run_dir = tmp_path / "smoke_001"
     run_dir.mkdir()
     figure_spec = {
-        "schema": "giiisp_figure_spec_v1",
+        "schema": "sci_figure_spec_v1",
         "figure_kind": "workflow",
         "caption": "方法流程",
         "communicative_intent": "展示模型从输入到验证的关键步骤",
@@ -21,7 +21,7 @@ def test_manifest_recovers_figure_spec_without_request_file(tmp_path):
         "reference_role": "preserve_structure",
     }
     run_input = {
-        "schema": "giiisp_run_input_v1",
+        "schema": "sci_run_input_v1",
         "run_id": "smoke_001",
         "figure_kind": "workflow",
         "caption": "方法流程",
@@ -30,15 +30,10 @@ def test_manifest_recovers_figure_spec_without_request_file(tmp_path):
         "layout_brief": "横向三步流程",
         "reference_role": "preserve_structure",
         "figure_spec": figure_spec,
-        "request_body_summary": {
-            "prompt": "画一个横向三步科研流程图",
-            "negativePrompt": "水印，模糊文字",
-            "aspectRatio": "1:1",
-            "imageSize": "1K",
-            "numberOfImages": 1,
-            "responseModalities": ["IMAGE", "TEXT"],
-            "outputMimeType": "image/png",
-        },
+        "prompt": "画一个横向三步科研流程图",
+        "negative_prompt": "水印，模糊文字",
+        "aspect_ratio": "1:1",
+        "image_size": "1K",
     }
     check = {
         "mime_type": "image/png",
@@ -48,7 +43,7 @@ def test_manifest_recovers_figure_spec_without_request_file(tmp_path):
         "quality_review_axes": [{"name": "content_accuracy", "score": None}],
     }
     semantic_review = {
-        "schema": "giiisp_semantic_review_v1",
+        "schema": "sci_semantic_review_v1",
         "provider": "dashscope",
         "model": "qwen3.7-plus",
         "status": "completed",
@@ -72,6 +67,7 @@ def test_manifest_recovers_figure_spec_without_request_file(tmp_path):
 
     manifest = json.loads((run_dir / "figure_manifest.json").read_text(encoding="utf-8"))
     assert manifest["task"]["prompt"] == "画一个横向三步科研流程图"
+    assert manifest["task"]["aspect_ratio"] == "1:1"
     assert manifest["task"]["layout_brief"] == "横向三步流程"
     assert manifest["task"]["reference_role"] == "preserve_structure"
     assert manifest["task"]["figure_spec"] == figure_spec

@@ -68,7 +68,7 @@ def build_run_input(run_dir, args, figure_spec, host_prompt):
     reference_path = Path(args.reference_image) if args.reference_image else None
     width, height = target_pixels(args.aspect_ratio, args.image_size)
     return {
-        "schema": "giiisp_run_input_v2",
+        "schema": "sci_run_input_v2",
         "created_at": now_iso(),
         "run_id": run_dir.name,
         "run_kind": args.run_kind,
@@ -109,7 +109,7 @@ def write_metadata(run_dir, run_input, status, blocker=None):
     write_json(
         run_dir / "metadata.json",
         {
-            "schema": "giiisp_run_metadata_v2",
+            "schema": "sci_run_metadata_v2",
             "created_at": run_input["created_at"],
             "updated_at": now_iso(),
             "run_id": run_dir.name,

@@ -134,7 +134,7 @@ def select_variant(manifest_paths):
     scored = [score_manifest(path, read_json(path)) for path in manifest_paths]
     scored.sort(key=lambda item: (item["score"], item.get("run_id") or ""), reverse=True)
     return {
-        "schema": "giiisp_variant_selection_v1",
+        "schema": "sci_variant_selection_v1",
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "best": scored[0] if scored else None,
         "candidates": scored,

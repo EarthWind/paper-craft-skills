@@ -108,7 +108,7 @@ def build_review_prompt(figure_spec, check, manifest, run_input=None):
         "revised_description 必须主要基于原 Detailed Description 修改，不要无故从头重写；需要重写局部时，要清楚描述元素、连接关系、背景、颜色、线条、图标风格和文字约束。\n"
         "输出必须是严格 JSON，不要 Markdown，不要解释性前后缀。JSON schema:\n"
         "{"
-        "\"schema\":\"giiisp_semantic_review_v1\","
+        "\"schema\":\"sci_semantic_review_v1\","
         "\"overall_ready_to_ship\":true|false,"
         "\"quality_review_axes\":[{\"name\":\"content_accuracy|layout_quality|text_readability|aesthetic_quality|artifact_severity\",\"status\":\"PASS|FAIL|UNCERTAIN\",\"score\":0-10,\"rationale\":\"...\"}],"
         "\"observed_labels\":[\"...\"],"
@@ -183,7 +183,7 @@ def call_dashscope(model, api_key, image_path, prompt, timeout):
 
 def blocked(reason, details=None):
     return {
-        "schema": "giiisp_semantic_review_v1",
+        "schema": "sci_semantic_review_v1",
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "provider": "dashscope",
         "status": "blocked",
@@ -244,7 +244,7 @@ def main():
     response = call_dashscope(args.model, api_key, image_path, prompt, args.timeout)
 
     review = {
-        "schema": "giiisp_semantic_review_v1",
+        "schema": "sci_semantic_review_v1",
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "provider": "dashscope",
         "endpoint": ENDPOINT,

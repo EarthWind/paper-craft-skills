@@ -80,7 +80,7 @@ def cmd_record(args):
     out = run_dir / "semantic_review.json"
     raw = sys.stdin.read() if args.review_json == "-" else Path(args.review_json).read_text(encoding="utf-8")
     base = {
-        "schema": "giiisp_semantic_review_v1",
+        "schema": "sci_semantic_review_v1",
         "created_at": now_iso(),
         "provider": "host-agent",
         "model": args.reviewer,
@@ -108,7 +108,7 @@ def cmd_record(args):
         return 2
     review = dict(base)
     review.update(parsed)
-    review["schema"] = "giiisp_semantic_review_v1"
+    review["schema"] = "sci_semantic_review_v1"
     review["provider"] = "host-agent"
     review["status"] = "completed"
     write_json(out, review)

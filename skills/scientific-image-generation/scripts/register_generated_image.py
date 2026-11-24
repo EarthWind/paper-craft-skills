@@ -25,7 +25,7 @@ def update_metadata(run_dir, status, backend=None, tool=None, image_path=None, c
         metadata = {}
     metadata.update(
         {
-            "schema": "giiisp_run_metadata_v2",
+            "schema": "sci_run_metadata_v2",
             "run_id": run_dir.name,
             "updated_at": now_iso(),
             "status": status,

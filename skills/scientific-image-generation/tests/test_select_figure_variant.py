@@ -11,7 +11,7 @@ SCRIPT = ROOT / "scripts" / "select_figure_variant.py"
 def write_manifest(path, run_id, status, image_path=None, machine_status=None, blocker=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     manifest = {
-        "schema": "giiisp_figure_manifest_v1",
+        "schema": "sci_figure_manifest_v1",
         "run_id": run_id,
         "figure_id": run_id,
         "status": status,
@@ -31,7 +31,7 @@ def write_manifest(path, run_id, status, image_path=None, machine_status=None, b
 def write_semantic_manifest(path, run_id, ready, action, missing=None, forbidden=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     manifest = {
-        "schema": "giiisp_figure_manifest_v1",
+        "schema": "sci_figure_manifest_v1",
         "run_id": run_id,
         "figure_id": run_id,
         "status": "completed",
