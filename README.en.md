@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="images/logo.svg" width="128" alt="paper-craft-skills logo"/>
+
 # paper-craft-skills
 
 **Turn academic papers into polished method figures, visual slide decks, and in-depth articles — zero config, one command.**

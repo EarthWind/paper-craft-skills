@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="images/logo.svg" width="128" alt="paper-craft-skills logo"/>
+
 # paper-craft-skills
 
 **把学术论文变成精美的方法图解、高质感 AIGC 幻灯片和深度长文。零配置，一行命令。**
