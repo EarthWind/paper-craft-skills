@@ -122,7 +122,7 @@ def main():
     parser = argparse.ArgumentParser(description="Register a host-produced image into a prepared run directory.")
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--image", help="Image file produced by the host (PNG/JPEG/WebP).")
-    parser.add_argument("--backend", choices=["host-image-tool", "code-render"], help="Backend actually used.")
+    parser.add_argument("--backend", choices=["host-image-tool", "code-render", "api-image"], help="Backend actually used.")
     parser.add_argument("--tool", help="Free text, e.g. 'codex image generation' or 'svg + rsvg-convert'.")
     parser.add_argument("--render-source", help="Figure source file for code-render runs (svg/html/py/dot/mmd); copied into the run.")
     parser.add_argument("--blocked-reason", help="Record a blocker instead of an image (e.g. host has no image tool).")

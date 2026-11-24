@@ -1,11 +1,11 @@
 ---
 name: "scientific-image-generation"
-description: "用宿主模型自己的出图能力（Codex 内置图像生成；Claude Code 写 SVG/HTML/Python 绘图源码再渲染成 PNG）生成科研图，并把论文段落、图题、实验流程或机制描述整理成作图简报、run 目录、图片、机器检查和看图审查记录。无需任何外部生图 token。适用于论文配图、科研流程图、机制通路图、实验示意图和学术汇报图。"
+description: "用宿主模型自己的出图能力（Codex 内置图像生成；Claude Code 写 SVG/HTML/Python 绘图源码再渲染成 PNG）生成科研图，也可选用 Gemini Nano Banana API 出图，并把论文段落、图题、实验流程或机制描述整理成作图简报、run 目录、图片、机器检查和看图审查记录。默认无需任何外部生图 token。适用于论文配图、科研流程图、机制通路图、实验示意图和学术汇报图。"
 ---
 
 # Scientific Image Generation（Claude / Codex 宿主出图）
 
-出图不调用外部接口、不需要任何 token：图片由当前宿主 agent 自己产出，脚本只负责作图简报、run 目录、机器检查、审查记录和 manifest。
+默认出图不调用外部接口、不需要任何 token：图片由当前宿主 agent 自己产出，脚本只负责作图简报、run 目录、机器检查、审查记录和 manifest。唯一的例外是可选的 `api-image` 后端（Gemini Nano Banana），只有用户选它时才需要 `GEMINI_API_KEY`。
 
 ## 适用场景
 
@@ -19,14 +19,33 @@ description: "用宿主模型自己的出图能力（Codex 内置图像生成；
 |---|---|---|
 | `host-image-tool` | Codex（内置图像生成可用时），或宿主暴露了其他生图工具 | 把 `image_prompt.txt` 交给宿主的生图工具；从工具输出里拿到图片文件路径 |
 | `code-render` | Claude Code 默认（Claude 不直接输出位图）；Codex 没有生图工具时的回退 | 宿主模型按 `image_prompt.txt` 写 `figure.svg`（首选）/ `figure.html` / `figure.py`（matplotlib，保存到 `$FIGURE_OUT`）/ `figure.dot` / `figure.mmd`，再用 `render_figure_source.py` 渲染成 PNG |
-| `auto` | 不确定时 | 有生图工具走 `host-image-tool`，否则走 `code-render` |
+| `api-image` | 用户要求用 Nano Banana，或需要高质量写实图、在原图上局部修改，且环境里有 `GEMINI_API_KEY` | `generate_image_gemini.py --run-dir <run>` 调 Gemini `generateContent`，自动登记图片 |
+| `auto` | 不确定时 | 有生图工具走 `host-image-tool`，否则走 `code-render`；不会自动选 `api-image` |
 
 选择要点：
 
 - 写实插画、细胞/分子示意、有质感的封面图：优先 `host-image-tool`。
 - 流程图、方法框架图、对比图、标签必须逐字正确的图：优先 `code-render`；文字由代码写死，不会出现伪英文和错字，且源码可继续编辑。
 - `code-render` 写 SVG 时：设置 `viewBox` 与目标尺寸一致、白底、中文用系统无衬线字体（`font-family="Noto Sans CJK SC, PingFang SC, Microsoft YaHei, sans-serif"`）、标签逐字取自 `required_labels`、箭头用 `marker`，每条连线单独一个 `path`。
-- 两种都不可用时（没有生图工具，也没有任何渲染器）：用 `register_generated_image.py --blocked-reason` 记录 blocker，不伪造图片。
+- 写实插画、细胞/分子示意、封面图、在上一版图上局部修改：`api-image`（Nano Banana）效果通常最好；标签仍要靠看图审查逐字核对。
+- 都不可用时（没有生图工具，也没有任何渲染器）：用 `register_generated_image.py --blocked-reason` 记录 blocker，不伪造图片。
+
+## Nano Banana（api-image 后端）
+
+```bash
+export GEMINI_API_KEY=...                         # Google AI Studio API key；只从环境变量读，不写入任何文件
+python scripts/prepare_image_run.py --prompt "..." --aspect-ratio 16:9 --image-size 2K --backend api-image
+python scripts/generate_image_gemini.py --run-dir <run> [--model gemini-3-pro-image]
+```
+
+- 默认模型 `gemini-nano-banana-2.1`，可用 `--model` 或环境变量 `GEMINI_IMAGE_MODEL` 覆盖。官方文档还列出 `gemini-3.1-flash-image`（Nano Banana 2）、`gemini-3.1-flash-lite-image`（2 Lite）、`gemini-3-pro-image`（Pro，适合 4K 精细图）、`gemini-2.5-flash-image`（旧版）。模型 ID 更新很快，报 404 时先查 Google 的模型列表。
+- 接口：`POST {GEMINI_API_BASE}/models/{model}:generateContent`，`GEMINI_API_BASE` 默认 `https://generativelanguage.googleapis.com/v1`；也可指向兼容的代理。
+- 画幅和尺寸来自 `run_input.json`：`aspectRatio` 支持 1:1、3:4、4:3、9:16、16:9、2:3、3:2、21:9 等；`imageSize` 为 1K/2K/4K（不同模型支持范围不同，被拒时降到 1K 或换模型）。
+- edit run 的 `reference_image.*` 会作为图片随请求发送；`--no-reference` 可不发。
+- 证据：`request.json`（不含 key 和图片 base64，只记参考图文件名和 SHA-256）、`response_summary.json`（结束原因、安全反馈、token 用量、模型附带文字），`metadata.json` 和 manifest 记录模型与用量。
+- 失败一律写 `blocker.json`：缺 key、HTTP 报错、被安全策略拦截、返回中没有图片。修好原因后可在同一 run 目录重跑，成功时会清除旧 blocker。
+
+数据外发：选用这个后端时，`image_prompt.txt` 的全文和参考图会发送给 Google。`image_prompt.txt` 不包含 `source_context` 原文段落，但用户写进 prompt 的内容会原样发出。未发表的论文内容，用前先向用户确认。
 
 ## 用户可见进度输出
 
@@ -69,6 +88,7 @@ description: "用宿主模型自己的出图能力（Codex 内置图像生成；
 2. **出图**：按 `image_prompt.txt` 出图。
    - `host-image-tool`：调用宿主生图工具，拿到图片文件路径。
    - `code-render`：在 run 目录写 `figure.svg` 等源码，运行 `render_figure_source.py --source <run>/figure.svg --out <run>/render.png --width W --height H`。
+   - `api-image`：运行 `generate_image_gemini.py --run-dir <run>`，它会直接完成登记，跳过第 3 步。
 3. **登记**：`register_generated_image.py --run-dir <run> --image <图片> --backend <后端> --tool "<具体工具>" [--render-source <源码>]`，写 `generated_image.*`、`check.json`，更新 metadata 和 manifest。
 4. **看图审查**：`host_semantic_review.py prompt --run-dir <run>` 打印 Critic 指令和图片路径。宿主必须真的打开图片（Claude Code 用 Read 读图，Codex 用图片查看），按指令输出 JSON，再用 `host_semantic_review.py record --run-dir <run> --review-json <file> --reviewer <模型名>` 落成 `semantic_review.json`。格式不合格会被拒绝，按提示修正后重录。不要不看图就写审查。
 5. **一次自动修订**：`run_scientific_image_workflow.py repair --run-dir <run>`。如果审查结论是 `edit`/`regenerate`、缺必须标签、出现禁止项，或 `content_accuracy`/`text_readability`/`artifact_severity` 判为 FAIL，它会写 `auto_repair_prompt.json`，并新建一个 `edit_*` run（`image_prompt.txt` 以 `revised_description` 为核心）。对新 run 重复步骤 2-4。最多自动修订一轮，第二次调用会返回 `NO_REPAIR`。
@@ -76,6 +96,8 @@ description: "用宿主模型自己的出图能力（Codex 内置图像生成；
 7. 最终回复必须说明：图片路径、后端、检查结果、复查结论、是否达到交付标准、下一轮修改 prompt。
 
 不确定下一步时运行 `run_scientific_image_workflow.py status --run-dir <run>`，它会告诉你当前在等哪一步。
+
+`api-image` 的修订：审查结论为 `edit` 时，`repair` 会自动把上一版图作为参考图（`reference_role=edit_image`）放进新 run，让 Nano Banana 在原图上改；结论为 `regenerate` 时整图重画。
 
 `code-render` 的额外好处：修订时直接改源码再渲染，比整图重生更稳；改动要写进新的 edit run，不覆盖上一轮。
 
@@ -350,6 +372,7 @@ run 目录最终包含：
 - `semantic_review.json`：宿主模型看图审查。
 - `auto_repair_prompt.json`：触发一次自动修订时的 Critic 建议、revised description 和新 prompt。
 - `manual_review.md`、`workflow_status.json`、`metadata.json`、`figure_manifest.json`：复查摘要、流程状态和交付索引。
-- `blocker.json`：宿主无法出图、渲染失败或参考图不存在时写入。
+- `request.json`、`response_summary.json`：仅 `api-image` 后端，脱敏请求和响应摘要。
+- `blocker.json`：宿主无法出图、渲染失败、API 失败或参考图不存在时写入。
 
 不要手写或伪造图片、`check.json` 或审查结论；`check.json` 只能由 `register_generated_image.py` 生成，审查必须基于真实看图。

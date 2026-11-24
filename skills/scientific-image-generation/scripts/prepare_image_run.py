@@ -75,6 +75,7 @@ def build_run_input(run_dir, args, figure_spec, host_prompt):
         "provider": "host-agent",
         "backend": args.backend,
         "backend_note": BACKEND_NOTES[args.backend],
+        "image_provider": args.image_provider if args.backend == "api-image" else None,
         "source_context": args.source_context,
         "caption": args.caption,
         "communicative_intent": args.intent or args.caption,
@@ -179,7 +180,10 @@ def main():
     print(f"Target size: {run_input['target_width']} x {run_input['target_height']}")
     print("Image prompt: " + str(run_dir / "image_prompt.txt"))
     print("Run directory: " + str(run_dir))
-    print("Next: produce the image, then run register_generated_image.py --run-dir <run> --image <file>")
+    if args.backend == "api-image":
+        print("Next: run generate_image_gemini.py --run-dir <run> (needs GEMINI_API_KEY)")
+    else:
+        print("Next: produce the image, then run register_generated_image.py --run-dir <run> --image <file>")
     return 0
 
 
