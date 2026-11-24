@@ -228,7 +228,7 @@ def next_step(run_dir):
     if not find_image(run_dir):
         run_input = read_json(run_dir / "run_input.json") or {}
         if run_input.get("backend") == "api-image":
-            return "awaiting_image", "运行 generate_image_gemini.py --run-dir（需要 GEMINI_API_KEY）"
+            return "awaiting_image", f"运行 generate_image_api.py --run-dir（provider: {run_input.get('image_provider') or 'gemini'}）"
         return "awaiting_image", "按 image_prompt.txt 出图，然后运行 register_generated_image.py"
     review = read_json(run_dir / "semantic_review.json")
     if semantic_status(review) != "completed":
@@ -323,7 +323,7 @@ def cmd_repair(args):
         print("Reference image (edit_image): " + reference_image)
     print("Run directory: " + str(new_dir))
     if backend == "api-image":
-        print("Next: generate_image_gemini.py --run-dir <new run>, review it, then finalize with --initial-run-dir " + str(run_dir))
+        print("Next: generate_image_api.py --run-dir <new run>, review it, then finalize with --initial-run-dir " + str(run_dir))
         return 0
     print("Next: produce the revised image, register it, review it, then finalize with --initial-run-dir " + str(run_dir))
     return 0
