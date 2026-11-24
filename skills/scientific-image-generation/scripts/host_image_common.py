@@ -3,8 +3,8 @@
 By default no network access and no API tokens: the image is produced by the
 host agent (Codex built-in image generation, or Claude rendering SVG/HTML/Python
 figure code). The optional api-image backend calls an image model API
-(Gemini "Nano Banana") through generate_image_gemini.py; only that script
-reads an API key, from the environment.
+(Gemini "Nano Banana" via Gemini API, Vertex AI or OpenRouter) through
+generate_image_api.py; only that script reads credentials, from the environment.
 """
 
 import hashlib
@@ -14,12 +14,12 @@ from pathlib import Path
 
 DEFAULT_NEGATIVE_PROMPT = "水印，模糊文字，错乱标签，低清晰度，广告风格"
 BACKENDS = ["auto", "host-image-tool", "code-render", "api-image"]
-IMAGE_PROVIDERS = ["gemini"]
+IMAGE_PROVIDERS = ["gemini", "vertex", "openrouter"]
 DEFAULT_GEMINI_IMAGE_MODEL = "gemini-nano-banana-2.1"
 BACKEND_NOTES = {
     "host-image-tool": "宿主自带的生图工具（Codex 内置图像生成，或宿主暴露的其他生图工具）直接出位图",
     "code-render": "宿主模型写 SVG/HTML/Python/Graphviz/Mermaid 绘图源码，再用 render_figure_source.py 渲染成 PNG（Claude Code 默认）",
-    "api-image": "脚本直接调用生图模型 API（Gemini Nano Banana，需要 GEMINI_API_KEY），用 generate_image_gemini.py 出图",
+    "api-image": "脚本直接调用 Nano Banana 生图 API（Gemini API / Vertex AI / OpenRouter，需要对应凭据），用 generate_image_api.py 出图",
     "auto": "有生图工具就用 host-image-tool，否则用 code-render",
 }
 IMAGE_NAMES = ["generated_image.png", "generated_image.jpg", "generated_image.jpeg", "generated_image.webp"]

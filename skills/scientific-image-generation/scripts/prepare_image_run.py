@@ -181,7 +181,7 @@ def main():
     print("Image prompt: " + str(run_dir / "image_prompt.txt"))
     print("Run directory: " + str(run_dir))
     if args.backend == "api-image":
-        print("Next: run generate_image_gemini.py --run-dir <run> (needs GEMINI_API_KEY)")
+        print(f"Next: run generate_image_api.py --run-dir <run> (provider: {args.image_provider})")
     else:
         print("Next: produce the image, then run register_generated_image.py --run-dir <run> --image <file>")
     return 0
