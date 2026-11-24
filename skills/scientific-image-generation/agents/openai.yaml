@@ -1,0 +1,8 @@
+interface:
+  display_name: "科研图像生成（宿主出图）"
+  short_description: "用 Codex 内置生图或代码绘制生成、审查、续改并归档科研配图"
+  brand_color: "#0F766E"
+  default_prompt: "Use $scientific-image-generation to produce a journal-ready scientific figure with Codex's built-in image generation (or code-render SVG when exact labels matter), then register it, review it by actually viewing the image, and keep a traceable run manifest."
+
+policy:
+  allow_implicit_invocation: true
