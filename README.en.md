@@ -28,6 +28,7 @@
   <a href="#paper-deck--visual-slide-decks-that-dont-look-like-templates">paper-deck</a> ·
   <a href="#paper-comic--how-it-works">paper-comic</a> ·
   <a href="#paper-analyzer--deep-articles-that-read-like-a-human-expert-wrote-them">paper-analyzer</a> ·
+  <a href="#wechat-article--publish-to-a-wechat-official-account">wechat-article</a> ·
   <a href="#license">License</a>
 </p>
 
@@ -221,6 +222,25 @@ Aligns paper concepts with the GitHub source code
 /paper-analyzer /path/to/paper.pdf                  # local PDF
 /paper-analyzer                                     # then paste text
 ```
+
+---
+
+## wechat-article — Publish to a WeChat Official Account
+
+Turns an article HTML written by paper-analyzer into a **copy-and-paste** WeChat Official Account post, plus a minimal cover.
+
+```text
+/wechat-article path/to/storytelling.html
+```
+
+| Problem | Fix |
+|---------|-----|
+| The WeChat editor strips `<style>` and `class` | Every element gets inline styles |
+| Local images break after pasting | Re-encoded as JPEG and embedded as base64: one self-contained file |
+| KaTeX and Mermaid do not render | Formulas become plain text (overridable per formula); Mermaid is dropped or replaced by a PNG |
+| External links are not allowed in the body | URLs move to a numbered reference list at the end |
+
+The resulting `wechat.html` shows the title, digest and a "copy article" button at the top; paste into the WeChat editor and you are done. The cover follows "one visual metaphor, at most one word", and `make_cover.py` locates the subject and crops a 2.35:1 banner and a 1:1 thumbnail.
 
 ---
 

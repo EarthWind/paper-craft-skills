@@ -27,6 +27,7 @@
   <a href="#paper-deck--不像模板的视觉幻灯片">paper-deck</a> ·
   <a href="#paper-comic--怎么用的">paper-comic</a> ·
   <a href="#paper-analyzer--一篇论文三种写法">paper-analyzer</a> ·
+  <a href="#wechat-article--转成公众号图文">wechat-article</a> ·
   <a href="#许可证">许可证</a>
 </p>
 
@@ -220,6 +221,25 @@ npx skills add EarthWind/paper-craft-skills
 /paper-analyzer /path/to/paper.pdf                  # 本地 PDF
 /paper-analyzer                                     # 然后粘贴文本
 ```
+
+---
+
+## wechat-article — 转成公众号图文
+
+把 paper-analyzer 写好的 HTML 长文变成**复制即可发布**的微信公众号图文，并配一张简洁封面。
+
+```text
+/wechat-article path/to/storytelling.html
+```
+
+| 问题 | 处理 |
+|------|------|
+| 公众号编辑器丢掉 `<style>` 和 `class` | 每个元素写成行内样式 |
+| 本地图片粘贴后裂图 | 转 JPEG 后 base64 内嵌，整页一个文件 |
+| KaTeX 公式、Mermaid 图无法渲染 | 公式转纯文本（可逐条覆盖）；Mermaid 去掉或换成 PNG |
+| 正文不允许外部链接 | 网址收进文末"参考资料"，正文加角标 |
+
+输出的 `wechat.html` 顶部给出标题、摘要和"复制正文"按钮，粘贴进公众号后台即可。封面按"一个视觉隐喻 + 最多一个词"生成，再由 `make_cover.py` 自动找主体、裁成 2.35:1 头条封面和 1:1 转发缩略图。
 
 ---
 
