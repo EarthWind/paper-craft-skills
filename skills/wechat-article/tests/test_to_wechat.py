@@ -148,3 +148,23 @@ def test_long_title_warns(tmp_path):
 def test_latex_to_html(latex, expected):
     got = re.sub(r"<[^>]+>", "", to_wechat.latex_to_html(latex, []))
     assert got.replace(" ", "") == expected.replace(" ", "")
+
+
+def test_follow_prompt_opens_article(article, tmp_path):
+    out = tmp_path / "wechat.html"
+    report = run(article, out, "--account", "论文拆解室")
+    body = article_part(out)
+    assert report["follow"] == "▲ 点击上方蓝字关注「论文拆解室」，及时获取更多论文解读"
+    # first thing inside the article, before the info card
+    first = body[body.index(">") + 1:].lstrip()
+    assert first.startswith("<section") and "点击上方" in first[:600]
+    assert body.index("点击上方") < body.index("论文：Someone.")
+
+
+def test_follow_prompt_default_custom_and_off(article, tmp_path):
+    out = tmp_path / "wechat.html"
+    assert run(article, out)["follow"].startswith("▲ 点击上方蓝字关注我们")
+    report = run(article, out, "--follow", "关注我，一起读论文 <3")
+    assert report["follow"] == "关注我，一起读论文 <3"
+    report = run(article, out, "--no-follow")
+    assert report["follow"] == "" and "点击上方" not in article_part(out)

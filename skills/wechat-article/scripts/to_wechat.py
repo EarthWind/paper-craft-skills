@@ -11,7 +11,9 @@ rewrites the article body accordingly:
   with --formula-map);
 * Mermaid blocks are dropped, or replaced by PNGs given with --mermaid-image;
 * links become plain text, http(s) targets are collected into a "参考资料" list;
-* the <h1> becomes the WeChat title field, the .meta block becomes a small info card.
+* the <h1> becomes the WeChat title field, the .meta block becomes a small info card;
+* a "点击上方蓝字关注" follow prompt opens the article (--account NAME / --follow TEXT /
+  --no-follow).
 
 The output page shows title / digest / cover hints and a "复制正文" button that copies the
 article as rich text for pasting into the WeChat editor.
@@ -19,7 +21,7 @@ article as rich text for pasting into the WeChat editor.
 Usage:
   to_wechat.py article.html wechat.html [--digest TEXT] [--cover a.png --cover b.png]
                [--formula-map map.json] [--mermaid-image m1.png ...] [--accent #1f4e9e]
-               [--note TEXT]
+               [--note TEXT] [--account NAME | --follow TEXT | --no-follow]
 A JSON report (title length, digest length, formulas, warnings, ...) is printed to stdout.
 """
 import argparse
@@ -39,6 +41,7 @@ except ImportError:  # Pillow is optional; without it images are embedded unchan
 
 TITLE_MAX = 64
 DIGEST_MAX = 120
+FOLLOW_TAIL = "，及时获取更多论文解读"
 VOID = {"img", "br", "hr", "meta", "link", "input", "source", "wbr"}
 
 # ---------------------------------------------------------------- LaTeX -> HTML text
@@ -191,7 +194,7 @@ def make_styles(accent):
         "td": cell + f"color:{text};",
         "strong": f"color:{accent};font-weight:bold;",
         "em": "font-style:italic;",
-        "code": "padding:1px 4px;background:#f2f3f5;border-radius:3px;font-size:14px;color:#c7254e;",
+        "code": "padding:1px 4px;background:#f2f3f5;border-radius:3px;font-size:14px;color:#c7254e;word-break:break-all;",
         "pre": "margin:0 0 20px;padding:12px 14px;background:#f6f8fa;border-radius:4px;overflow-x:auto;font-size:13px;line-height:1.6;color:#24292e;white-space:pre-wrap;word-break:break-all;",
         "figure": "margin:0 0 24px;",
         "figcaption": f"margin:8px 0 0;font-size:13px;line-height:1.6;color:{muted};text-align:center;",
@@ -204,6 +207,9 @@ def make_styles(accent):
         "refs h": f"margin:0 0 6px;font-size:14px;font-weight:bold;color:{text};",
         "refs p": f"margin:0;font-size:12px;line-height:1.8;color:{muted};word-break:break-all;",
         "sup": "font-size:0.75em;",
+        "follow": "margin:0 0 20px;padding:10px 12px;background:#f7f8fa;border-radius:4px;text-align:center;",
+        "follow p": f"margin:0;font-size:14px;line-height:1.7;color:{muted};letter-spacing:0.5px;",
+        "follow em": f"color:{accent};font-weight:bold;font-style:normal;",
     }
 
 
@@ -468,6 +474,23 @@ def build_info(conv, note, styles):
             + "<br/>".join(keep) + "</p></section>")
 
 
+def build_follow(account, follow, styles):
+    """Follow prompt shown at the very top of the article; "" when disabled.
+
+    follow=None -> default wording built from account; follow="" -> disabled;
+    any other string -> used verbatim (plain text, escaped).
+    """
+    if follow == "":
+        return ""
+    em = styles["follow em"]
+    if follow is not None:
+        inner = html.escape(follow, quote=False)
+    else:
+        name = f'<span style="{em}">「{html.escape(account, quote=False)}」</span>' if account else "我们"
+        inner = f'▲ 点击上方<span style="{em}">蓝字</span>关注{name}{FOLLOW_TAIL}'
+    return f'<section style="{styles["follow"]}"><p style="{styles["follow p"]}">{inner}</p></section>'
+
+
 def build_refs(conv, styles):
     if not conv.refs:
         return ""
@@ -534,7 +557,7 @@ document.getElementById('copy').onclick = async function () {{
 
 
 def convert(src, out, digest=None, title=None, covers=(), formula_map=None, mermaid_images=(),
-            accent="#1f4e9e", note=None):
+            accent="#1f4e9e", note=None, account=None, follow=None):
     src, out = pathlib.Path(src), pathlib.Path(out)
     raw = src.read_text(encoding="utf-8")
     m = re.search(r"<body[^>]*>(.*)</body>", raw, re.S | re.I)
@@ -556,7 +579,8 @@ def convert(src, out, digest=None, title=None, covers=(), formula_map=None, merm
         article = article.replace("__META__", info, 1)
     elif info:
         article = info + article
-    article = article.strip() + "\n" + build_refs(conv, styles)
+    follow_html = build_follow(account, follow, styles)
+    article = follow_html + "\n" + article.strip() + "\n" + build_refs(conv, styles)
     article = re.sub(r"\n{3,}", "\n\n", article)
 
     for bad in ("class=", "<a ", "<script", "<div", "$$"):
@@ -593,6 +617,7 @@ def convert(src, out, digest=None, title=None, covers=(), formula_map=None, merm
         "mermaid_replaced": conv.mermaid_replaced,
         "mermaid_dropped": conv.mermaid_dropped,
         "formulas": conv.formulas,
+        "follow": html.unescape(re.sub(r"<[^>]+>", "", follow_html)),
         "references": [h for h, _ in conv.refs],
         "warnings": conv.warnings,
     }
@@ -609,10 +634,16 @@ def main(argv=None):
     ap.add_argument("--mermaid-image", action="append", default=[], help="PNG replacing the next Mermaid block; repeatable, in order")
     ap.add_argument("--accent", default="#1f4e9e", help="theme colour (default #1f4e9e)")
     ap.add_argument("--note", help="extra line for the info card, e.g. '配图为重新绘制的示意图，非论文原图'")
+    fg = ap.add_mutually_exclusive_group()
+    fg.add_argument("--account", help="公众号名称, shown in the follow prompt at the top of the article")
+    fg.add_argument("--follow", help="custom follow-prompt text (plain text), replaces the default wording")
+    fg.add_argument("--no-follow", action="store_true", help="omit the follow prompt")
     args = ap.parse_args(argv)
+    follow = "" if args.no_follow else args.follow
     fmap = json.loads(pathlib.Path(args.formula_map).read_text(encoding="utf-8")) if args.formula_map else {}
     report = convert(args.src, args.out, digest=args.digest, title=args.title, covers=args.cover,
-                     formula_map=fmap, mermaid_images=args.mermaid_image, accent=args.accent, note=args.note)
+                     formula_map=fmap, mermaid_images=args.mermaid_image, accent=args.accent, note=args.note,
+                     account=args.account, follow=follow)
     json.dump(report, sys.stdout, ensure_ascii=False, indent=2)
     print()
 

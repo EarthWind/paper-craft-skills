@@ -28,6 +28,7 @@ description: |
 | Mermaid 图 | 显示成源码 | 默认去掉并告警；可用 PNG 替换 |
 | 外部链接 | 正文不允许非公众号链接 | 去掉链接，网址收进文末"参考资料"并加角标 |
 | `<h1>` 标题 | 与公众号标题栏重复 | 移出正文，作为标题字段给出 |
+| （原文没有） | 读者看完不知道关注谁 | 正文最上方加一行"点击上方蓝字关注「公众号名」" |
 
 ## 工作流程
 
@@ -35,6 +36,7 @@ description: |
 
 - 找到要转换的 HTML（通常是论文目录里的 `storytelling.html`，也可以是 academic/concise）。
 - 用户没说要不要封面时，问一句；只说"转公众号"时默认两样都做。
+- 问一下**公众号名称**（用于文首关注提示）；用户之前给过就直接沿用。不想问或用户不说时，用通用文案"关注我们"。
 
 ### Step 2：写摘要，转换正文
 
@@ -44,8 +46,12 @@ description: |
 python3 scripts/to_wechat.py <article.html> <out_dir>/wechat.html \
   --digest "<一句话摘要>" \
   --cover wechat-cover.png --cover wechat-cover-1x1.png \
-  --note "配图为依据论文重新绘制的示意图，非论文原图"
+  --note "配图为依据论文重新绘制的示意图，非论文原图" \
+  --account "<公众号名称>"
 ```
+
+- `--account`：文首关注提示里的公众号名，生成"▲ 点击上方蓝字关注「名称」，及时获取更多论文解读"。不传时为"关注我们"。
+- `--follow "<文案>"`：完全自定义关注提示（纯文本）；`--no-follow`：不加关注提示。三者互斥。
 
 - `--note`：文中配图是重新绘制的示意图时加上，写进文首信息卡。
 - `--accent '#1f4e9e'`：主题色，封面用同一个颜色。
@@ -57,11 +63,12 @@ python3 scripts/to_wechat.py <article.html> <out_dir>/wechat.html \
 - `formulas`：每条公式转换后的 `html` 是否读得通。读不通的写进一个 JSON（`{"原 LaTeX": "替换用的 HTML"}`），用 `--formula-map map.json` 重跑。复杂公式（矩阵、多行推导）宁可改写成一句文字说明。
 - `mermaid_dropped` > 0：判断这张图是否只是重复了旁边的配图。重复就接受去掉；不重复就把它渲染成 PNG（例如有 `mmdc` 时用 mermaid-cli，或用无头浏览器截图），再用 `--mermaid-image` 按出现顺序传入。
 - `title_len` ≤ 64、`digest_len` ≤ 120。
+- `follow`：文首关注提示的最终文字，确认公众号名写对了。
 - `warnings` 为空，或每条都已处理/说明。
 
 ### Step 3：渲染检查
 
-用无头浏览器截图看一遍（例如 `google-chrome --headless=new --screenshot=shot.png --window-size=720,4000 file://.../wechat.html`），确认：标题层级、表格、引用、图片、金句都在；没有残留的 `$`、Mermaid 源码或裂图。
+用无头浏览器截图看一遍（例如 `google-chrome --headless=new --screenshot=shot.png --window-size=720,4000 file://.../wechat.html`），确认：文首关注提示在信息卡上方、标题层级、表格、引用、图片、金句都在；没有残留的 `$`、Mermaid 源码或裂图。
 
 ### Step 4：封面（简洁优先）
 
@@ -101,6 +108,7 @@ python3 scripts/to_wechat.py <article.html> <out_dir>/wechat.html \
 - ✅ 粘贴后不依赖任何外部 CSS/JS/字体，换设备打开排版一致
 - ✅ 正文没有残留 `$`、`class`、`<a>`、Mermaid 源码
 - ✅ 摘要是一句完整的话，不是截断的半句
+- ✅ 正文第一行是关注提示，公众号名与实际账号一致（不知道名称时用"关注我们"，不要编造）
 - ✅ 封面只有一个视觉隐喻、最多一个词，两种裁切都不切掉主体
 - ❌ 不要为了"好看"往封面加标题、副标题、图标堆砌
 - ❌ 不要在提示词或文章里加入原文没有的数据
